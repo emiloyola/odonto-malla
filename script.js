@@ -1,7 +1,3 @@
-// SCRIPT COMPLETO – MALLA CURRICULAR ODONTOLOGÍA FOUCh
-// Actualización: desbloqueo solo cuando el semestre anterior esté completamente aprobado
-
-
 document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("malla-container");
   const contadorRamos = document.getElementById("contador-ramos");
