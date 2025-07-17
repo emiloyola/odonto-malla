@@ -25,15 +25,33 @@ h1 {
 }
 
 #malla-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 15px;
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
   padding: 20px;
-  max-width: 1100px;
-  margin: 0 auto;
+  margin-bottom: 40px;
 }
 
-/* Estados */
+.semestre {
+  min-width: 250px;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.semestre h2 {
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  color: #4a148c;
+}
+
+.semestre .ramo {
+  margin-bottom: 10px;
+}
+
+/* Ramos */
 .ramo {
   padding: 15px;
   border-radius: 10px;
@@ -47,19 +65,17 @@ h1 {
   justify-content: center;
 }
 
-/* Morado clarito: bloqueado */
+/* Estados */
 .bloqueado {
   background-color: #d1c4e9;
   cursor: not-allowed;
   opacity: 0.8;
 }
 
-/* Rosa fuerte: desbloqueado */
 .desbloqueado {
   background-color: #f48fb1;
 }
 
-/* Rosa pálido: aprobado */
 .aprobado {
   background-color: #f8bbd0;
   text-decoration: line-through;
@@ -74,28 +90,3 @@ h1 {
   border-radius: 5px;
   border: 1px solid #ccc;
 }
-#malla-container {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  padding: 20px;
-}
-
-.semestre {
-  min-width: 250px;
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-}
-
-.semestre h2 {
-  font-size: 1.1em;
-  margin-bottom: 10px;
-  color: #4a148c;
-}
-
-.semestre .ramo {
-  margin-bottom: 10px;
-}
-
