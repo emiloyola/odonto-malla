@@ -5,9 +5,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const contadorCreditos = document.getElementById("contador-creditos");
   const resetBtn = document.getElementById("reset");
 
-  // [... Aquí va TODO el array "ramos" que ya pegaste antes, no lo repito por espacio ...]
+  const ramos = [
+    { id: "bio_cel", nombre: "Biología Celular y Genética (ODN0003)", creditos: 6, semestre: 1, prereqs: [], desbloquea: ["microbio"] },
+    { id: "microbio", nombre: "Bases Científicas de la Microbiología (ODN0011)", creditos: 6, semestre: 2, prereqs: ["bio_cel"], desbloquea: [] },
+    { id: "histologia", nombre: "Histología General (ODN0004)", creditos: 6, semestre: 1, prereqs: [], desbloquea: ["histologia_oral"] },
+    { id: "histologia_oral", nombre: "Histología Oral (ODN0007)", creditos: 5, semestre: 2, prereqs: ["histologia"], desbloquea: [] },
+    { id: "fisica1", nombre: "Procesos Físicos I (QDN0001)", creditos: 6, semestre: 1, prereqs: [], desbloquea: ["fisica2"] },
+    { id: "fisica2", nombre: "Procesos Físicos II (QDN0002)", creditos: 6, semestre: 2, prereqs: ["fisica1"], desbloquea: [] },
+    { id: "quimica1", nombre: "Procesos Químicos I (QDN0003)", creditos: 6, semestre: 1, prereqs: [], desbloquea: ["quimica2"] },
+    { id: "quimica2", nombre: "Procesos Químicos II (QDN0004)", creditos: 6, semestre: 2, prereqs: ["quimica1"], desbloquea: [] },
+    { id: "anatomia1", nombre: "Bases Anatómicas (ODN0006)", creditos: 6, semestre: 1, prereqs: [], desbloquea: ["anatomia2"] },
+    { id: "anatomia2", nombre: "Anatomía de Cara y Cuello (ODN0008)", creditos: 6, semestre: 2, prereqs: ["anatomia1"], desbloquea: [] },
+    { id: "ingles1", nombre: "Inglés I (ODN0001)", creditos: 4, semestre: 1, prereqs: [], desbloquea: ["ingles2"] },
+    { id: "ingles2", nombre: "Inglés II (ODN0002)", creditos: 4, semestre: 2, prereqs: ["ingles1"], desbloquea: [] }
+  ];
 
-  // Convertir array en diccionario para acceso rápido
   const ramosMap = {};
   ramos.forEach(r => ramosMap[r.id] = r);
 
@@ -24,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let aprobados = 0;
     let creditos = 0;
 
-    // Agrupar ramos por semestre
     const semestres = {};
     ramos.forEach(r => {
       if (!semestres[r.semestre]) semestres[r.semestre] = [];
@@ -56,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         div.onclick = () => {
           if (div.classList.contains("bloqueado")) return;
-
           if (!div.classList.contains("aprobado")) {
             marcarAprobado(ramo.id);
           } else {
