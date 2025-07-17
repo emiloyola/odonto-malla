@@ -51,7 +51,6 @@ h1 {
   margin-bottom: 10px;
 }
 
-/* Ramos */
 .ramo {
   padding: 15px;
   border-radius: 10px;
@@ -63,9 +62,9 @@ h1 {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background-color: #f0f0f0;
 }
 
-/* Estados */
 .bloqueado {
   background-color: #d1c4e9;
   cursor: not-allowed;
