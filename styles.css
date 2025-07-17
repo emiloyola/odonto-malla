@@ -1,0 +1,76 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #fafafa;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  color: #4a148c;
+  margin: 20px 0;
+}
+
+#info {
+  margin-bottom: 20px;
+}
+
+#reset {
+  padding: 8px 16px;
+  background-color: #ab47bc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#malla-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 15px;
+  padding: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Estados */
+.ramo {
+  padding: 15px;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: 0.3s;
+  cursor: pointer;
+  color: #4a148c;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Morado clarito: bloqueado */
+.bloqueado {
+  background-color: #d1c4e9;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Rosa fuerte: desbloqueado */
+.desbloqueado {
+  background-color: #f48fb1;
+}
+
+/* Rosa pálido: aprobado */
+.aprobado {
+  background-color: #f8bbd0;
+  text-decoration: line-through;
+}
+
+.ramo input {
+  margin-top: 8px;
+  width: 80px;
+  align-self: center;
+  font-weight: normal;
+  padding: 4px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
