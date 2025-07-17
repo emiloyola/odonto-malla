@@ -1,5 +1,5 @@
 // SCRIPT COMPLETO – MALLA CURRICULAR ODONTOLOGÍA FOUCh
-// Corrige: desbloqueo visual solo cuando se cumplan prerrequisitos
+// Actualización: desbloqueo solo cuando el semestre anterior esté completamente aprobado
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -14,17 +14,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const ramosMap = Object.fromEntries(ramos.map(r => [r.id, r]));
   let progreso = JSON.parse(localStorage.getItem("mallaProgreso")) || {};
 
+  function semestreAprobado(semestre) {
+    const ramosDelSemestre = ramos.filter(r => r.semestre === semestre);
+    return ramosDelSemestre.every(r => progreso[r.id]?.estado === "aprobado");
+  }
+
   function actualizarDesbloqueo() {
     ramos.forEach(r => {
       const estadoActual = progreso[r.id]?.estado || "bloqueado";
-      if (estadoActual !== "aprobado") {
-        if (r.prereqs.length === 0) {
-          progreso[r.id] = { ...progreso[r.id], estado: "desbloqueado" };
-        } else {
-          const desbloqueado = r.prereqs.every(pr => progreso[pr]?.estado === "aprobado");
-          progreso[r.id] = { ...progreso[r.id], estado: desbloqueado ? "desbloqueado" : "bloqueado" };
-        }
-      }
+      if (estadoActual === "aprobado") return;
+
+      const semestreAnterior = r.semestre - 1;
+      const anteriorAprobado = semestreAnterior === 0 || semestreAprobado(semestreAnterior);
+
+      const cumplePrerreq = r.prereqs.length === 0 || r.prereqs.every(pr => progreso[pr]?.estado === "aprobado");
+
+      const nuevoEstado = (anteriorAprobado && cumplePrerreq) ? "desbloqueado" : "bloqueado";
+      progreso[r.id] = { ...progreso[r.id], estado: nuevoEstado };
     });
   }
 
@@ -129,11 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
     progreso = {};
     localStorage.removeItem("mallaProgreso");
     ramos.forEach(r => {
-      if (r.prereqs.length === 0 && r.semestre === 1) {
-        progreso[r.id] = { estado: "desbloqueado" };
-      } else {
-        progreso[r.id] = { estado: "bloqueado" };
-      }
+      progreso[r.id] = { estado: r.semestre === 1 ? "desbloqueado" : "bloqueado" };
     });
     renderMalla();
   };
