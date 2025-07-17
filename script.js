@@ -5,49 +5,54 @@ document.addEventListener("DOMContentLoaded", () => {
   const contadorCreditos = document.getElementById("contador-creditos");
   const resetBtn = document.getElementById("reset");
 
-  const ramos = [/* ... todos los ramos definidos correctamente ... */];
+  if (!container || !contadorRamos || !totalRamosSpan || !contadorCreditos || !resetBtn) return;
 
-  const ramosMap = Object.fromEntries(ramos.map(r => [r.id, r]));
+  const ramos = [
+    // ... (aquí va tu array completo de ramos actualizado)
+  ];
+
+  const ramosMap = {};
+  ramos.forEach(r => ramosMap[r.id] = r);
+
   let progreso = JSON.parse(localStorage.getItem("mallaProgreso")) || {};
 
-  function semestreAprobado(semestre) {
-    const ramosDelSemestre = ramos.filter(r => r.semestre === semestre);
-    return ramosDelSemestre.every(r => progreso[r.id]?.estado === "aprobado");
-  }
-
-  function actualizarDesbloqueo() {
+  function obtenerSemestresAprobados() {
+    const aprobadosPorSemestre = {};
     ramos.forEach(r => {
-      const estadoActual = progreso[r.id]?.estado || "bloqueado";
-      if (estadoActual === "aprobado") return;
-
-      const semestreAnterior = r.semestre - 1;
-      const anteriorAprobado = semestreAnterior === 0 || semestreAprobado(semestreAnterior);
-
-      const cumplePrerreq = r.prereqs.length === 0 || r.prereqs.every(pr => progreso[pr]?.estado === "aprobado");
-
-      const nuevoEstado = (anteriorAprobado && cumplePrerreq) ? "desbloqueado" : "bloqueado";
-      progreso[r.id] = { ...progreso[r.id], estado: nuevoEstado };
+      if (progreso[r.id]?.estado === "aprobado") {
+        aprobadosPorSemestre[r.semestre] = (aprobadosPorSemestre[r.semestre] || 0) + 1;
+      }
     });
+    return aprobadosPorSemestre;
   }
+
+  ramos.forEach(r => {
+    if (!progreso[r.id]) {
+      progreso[r.id] = { estado: "bloqueado" };
+    }
+  });
 
   function renderMalla() {
-    actualizarDesbloqueo();
     container.innerHTML = "";
-    let aprobados = 0, creditos = 0;
-    const semestres = {};
+    let aprobados = 0;
+    let creditos = 0;
 
+    const semestres = {};
     ramos.forEach(r => {
       if (!semestres[r.semestre]) semestres[r.semestre] = [];
       semestres[r.semestre].push(r);
     });
 
-    Object.keys(semestres).sort((a, b) => a - b).forEach(numSemestre => {
+    const ordenSemestres = Object.keys(semestres).sort((a, b) => a - b);
+
+    ordenSemestres.forEach(numSemestre => {
       const semDiv = document.createElement("div");
       semDiv.className = "semestre";
 
+      let totalCreditos = 0;
+      let sumaPonderada = 0;
+
       const ramosSem = semestres[numSemestre];
-      const totalCreditosSem = ramosSem.reduce((sum, r) => sum + r.creditos, 0);
-      let sumaPonderada = 0, creditosAprobados = 0;
 
       ramosSem.forEach(ramo => {
         const div = document.createElement("div");
@@ -56,45 +61,40 @@ document.addEventListener("DOMContentLoaded", () => {
         div.innerHTML = `<div>${ramo.nombre} (${ramo.creditos} cr.)</div>`;
 
         const estado = progreso[ramo.id]?.estado || "bloqueado";
-        div.className = `ramo ${estado}`;
+        div.classList.remove("bloqueado", "desbloqueado", "aprobado");
+        div.classList.add(estado);
 
         if (estado === "aprobado") {
           aprobados++;
           creditos += ramo.creditos;
-          const promedio = parseFloat(progreso[ramo.id]?.promedio || 0);
-          if (promedio) {
+          const promedio = parseFloat(progreso[ramo.id]?.promedio);
+          if (!isNaN(promedio)) {
             sumaPonderada += promedio * ramo.creditos;
-            creditosAprobados += ramo.creditos;
+            totalCreditos += ramo.creditos;
           }
         }
 
         div.addEventListener("dblclick", () => {
-          if (estado === "bloqueado") return;
-          if (estado !== "aprobado") marcarAprobado(ramo.id);
-          else desmarcarAprobado(ramo.id);
+          if (div.classList.contains("bloqueado")) return;
+          if (!div.classList.contains("aprobado")) {
+            marcarAprobado(ramo.id);
+          } else {
+            desmarcarAprobado(ramo.id);
+          }
           guardarProgreso();
           renderMalla();
         });
 
-        const input = document.createElement("input");
-        input.type = "number";
-        input.min = 1;
-        input.max = 7;
-        input.step = 0.1;
-        input.value = progreso[ramo.id]?.promedio || "";
-        input.placeholder = "Promedio";
-        input.addEventListener("input", (e) => {
-          progreso[ramo.id].promedio = e.target.value;
-          guardarProgreso();
-        });
-        div.appendChild(document.createElement("br"));
-        div.appendChild(input);
+        if (estado === "aprobado" || estado === "desbloqueado") {
+          addPromedio(div, progreso[ramo.id]?.promedio || "");
+        }
 
         semDiv.appendChild(div);
       });
 
-      const promedioSem = creditosAprobados ? (sumaPonderada / creditosAprobados).toFixed(2) : "-";
-      semDiv.insertAdjacentHTML("afterbegin", `<h2>Semestre ${numSemestre} – Promedio: ${promedioSem}</h2>`);
+      let promedio = totalCreditos > 0 ? (sumaPonderada / totalCreditos).toFixed(2) : "-";
+      semDiv.innerHTML = `<h2>Semestre ${numSemestre} – Promedio: ${promedio}</h2>` + semDiv.innerHTML;
+
       container.appendChild(semDiv);
     });
 
@@ -103,15 +103,37 @@ document.addEventListener("DOMContentLoaded", () => {
     contadorCreditos.textContent = creditos;
   }
 
+  function addPromedio(div, valor) {
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = 1;
+    input.max = 7;
+    input.step = "0.1";
+    input.placeholder = "Promedio";
+    input.value = valor;
+    input.oninput = (e) => {
+      progreso[div.id].promedio = e.target.value;
+      guardarProgreso();
+    };
+    div.appendChild(document.createElement("br"));
+    div.appendChild(input);
+  }
+
   function marcarAprobado(id) {
     progreso[id] = { estado: "aprobado", promedio: progreso[id]?.promedio || "" };
-    guardarProgreso();
+    ramos.forEach(r => {
+      const todosAprobados = r.prereqs.every(pre => progreso[pre]?.estado === "aprobado");
+      const semestreAnterior = parseInt(r.semestre) - 1;
+      const anteriorCompletado = semestreAnterior === 0 || ramos.filter(rm => rm.semestre === semestreAnterior).every(rm => progreso[rm.id]?.estado === "aprobado");
+      if (todosAprobados && anteriorCompletado && progreso[r.id]?.estado !== "aprobado") {
+        progreso[r.id] = { estado: "desbloqueado", promedio: progreso[r.id]?.promedio || "" };
+      }
+    });
   }
 
   function desmarcarAprobado(id) {
     progreso[id] = { estado: "desbloqueado" };
     bloquearDependientes(id);
-    guardarProgreso();
   }
 
   function bloquearDependientes(id) {
@@ -131,10 +153,14 @@ document.addEventListener("DOMContentLoaded", () => {
     progreso = {};
     localStorage.removeItem("mallaProgreso");
     ramos.forEach(r => {
-      progreso[r.id] = { estado: r.semestre === 1 ? "desbloqueado" : "bloqueado" };
+      if (r.semestre === 1) {
+        progreso[r.id] = { estado: "desbloqueado" };
+      } else {
+        progreso[r.id] = { estado: "bloqueado" };
+      }
     });
     renderMalla();
   };
 
-  resetBtn.click();
+  renderMalla();
 });
